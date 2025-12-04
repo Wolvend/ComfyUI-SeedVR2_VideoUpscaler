@@ -171,7 +171,7 @@ def _describe_attention_mode(attention_mode: Optional[str]) -> str:
     Generate human-readable description of attention mode configuration.
     
     Args:
-        attention_mode: Attention mode string ('sdpa' or 'flash_attn')
+        attention_mode: Attention mode string ('sdpa', 'sdpa_flash', or 'flash_attn')
         
     Returns:
         Human-readable description string
@@ -181,6 +181,7 @@ def _describe_attention_mode(attention_mode: Optional[str]) -> str:
     
     mode_descriptions = {
         'sdpa': 'PyTorch SDPA',
+        'sdpa_flash': 'PyTorch SDPA flash backend',
         'flash_attn': 'Flash Attention 2'
     }
     
@@ -436,7 +437,7 @@ def _update_dit_config(
             - dynamic: bool - Enable dynamic shapes
             - dynamo_cache_size_limit: int - Cache size limit
             - dynamo_recompile_limit: int - Recompilation limit
-        attention_mode: Attention computation backend ('sdpa' or 'flash_attn')
+        attention_mode: Attention computation backend ('sdpa', 'sdpa_flash', or 'flash_attn')
         debug: Debug instance for logging
         
     Returns:
@@ -771,7 +772,7 @@ def configure_runner(
         decode_tile_size: Tile size for decoding (height, width)
         decode_tile_overlap: Tile overlap for decoding (height, width)
         tile_debug: Tile visualization mode (false/encode/decode)
-        attention_mode: Attention computation backend ('sdpa' or 'flash_attn')
+        attention_mode: Attention computation backend ('sdpa', 'sdpa_flash', or 'flash_attn')
         torch_compile_args_dit: Optional torch.compile configuration for DiT model
         torch_compile_args_vae: Optional torch.compile configuration for VAE model
         
@@ -857,7 +858,7 @@ def _configure_runner_settings(
         decode_tile_size: Tile dimensions (height, width) for decoding in pixels
         decode_tile_overlap: Overlap dimensions (height, width) between decoding tiles
         tile_debug: Tile visualization mode (false/encode/decode)
-        attention_mode: Attention computation backend ('sdpa' or 'flash_attn')
+        attention_mode: Attention computation backend ('sdpa', 'sdpa_flash', or 'flash_attn')
         torch_compile_args_dit: torch.compile configuration for DiT model or None
         torch_compile_args_vae: torch.compile configuration for VAE model or None
         block_swap_config: BlockSwap configuration for DiT model or None

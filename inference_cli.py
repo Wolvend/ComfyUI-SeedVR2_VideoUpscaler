@@ -1159,8 +1159,8 @@ Examples:
     # Performance
     perf_group = parser.add_argument_group('Performance optimization')
     perf_group.add_argument("--attention_mode", type=str, default="sdpa",
-                        choices=["sdpa", "flash_attn"],
-                        help="Attention backend: 'sdpa' (default, always available) or 'flash_attn' (faster, requires package)")
+                        choices=["sdpa", "sdpa_flash", "flash_attn"],
+                        help=\"Attention backend: 'sdpa' (default, always available), 'sdpa_flash' (PyTorch flash SDPA, CUDA only), or 'flash_attn' (fastest, requires package)\")
     perf_group.add_argument("--compile_dit", action="store_true", 
                         help="Enable torch.compile for DiT model (20-40%% speedup, requires PyTorch 2.0+ and Triton)")
     perf_group.add_argument("--compile_vae", action="store_true",

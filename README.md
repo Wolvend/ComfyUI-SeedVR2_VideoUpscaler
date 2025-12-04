@@ -399,6 +399,7 @@ Configure the DiT (Diffusion Transformer) model for video upscaling.
 
 - **attention_mode**: Attention computation backend
   - `sdpa`: PyTorch scaled_dot_product_attention (default, stable, always available)
+  - `sdpa_flash`: PyTorch SDPA flash backend (built-in speedup on CUDA, no flash-attn dependency)
   - `flash_attn`: Flash Attention 2 (faster on supported hardware, requires flash-attn package)
 
 - **torch_compile_args**: Connect to SeedVR2 Torch Compile Settings node for 20-40% speedup
@@ -845,7 +846,7 @@ python inference_cli.py media_folder/ \
 - `--tile_debug`: Visualize tiles: 'false' (default), 'encode', or 'decode'
 
 **Performance Optimization:**
-- `--attention_mode`: Attention backend: 'sdpa' (default, stable) or 'flash_attn' (faster, requires package)
+- `--attention_mode`: Attention backend: 'sdpa' (default, stable), 'sdpa_flash' (PyTorch flash SDPA, CUDA only), or 'flash_attn' (fastest, requires package)
 - `--compile_dit`: Enable torch.compile for DiT model (20-40% speedup, requires PyTorch 2.0+ and Triton)
 - `--compile_vae`: Enable torch.compile for VAE model (15-25% speedup, requires PyTorch 2.0+ and Triton)
 - `--compile_backend`: Compilation backend: 'inductor' (full optimization) or 'cudagraphs' (lightweight) (default: inductor)

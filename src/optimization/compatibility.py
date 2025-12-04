@@ -51,14 +51,14 @@ except ImportError:
 
 def validate_flash_attention_availability(requested_mode: str, debug=None) -> str:
     """
-    Validate Flash Attention availability and warn if fallback needed.
+    Validate attention backend availability and warn if fallback needed.
     
     Args:
-        requested_mode: Either 'flash_attn' or 'sdpa'
+        requested_mode: One of 'flash_attn', 'sdpa', or 'sdpa_flash'
         debug: Optional debug instance for logging
         
     Returns:
-        Validated mode ('flash_attn' or 'sdpa')
+        Validated mode ('flash_attn', 'sdpa', or 'sdpa_flash')
     """
     if requested_mode == 'flash_attn' and not FLASH_ATTN_AVAILABLE:
         error_msg = (
@@ -77,7 +77,33 @@ def validate_flash_attention_availability(requested_mode: str, debug=None) -> st
             debug.log(error_msg, level="WARNING", category="setup", force=True)
         
         return 'sdpa'
-    
+
+    if requested_mode == 'sdpa_flash':
+        # PyTorch's native SDPA flash backend (no third-party dependency) – available on recent GPUs.
+        if not torch.cuda.is_available():
+            if debug:
+                debug.log(
+                    "SDPA flash backend requested but CUDA is not available. Falling back to 'sdpa'.",
+                    level="WARNING",
+                    category="setup",
+                    force=True,
+                )
+            return 'sdpa'
+        try:
+            torch.backends.cuda.enable_flash_sdp(True)
+            torch.backends.cuda.enable_math_sdp(False)
+            torch.backends.cuda.enable_mem_efficient_sdp(False)
+            return 'sdpa_flash'
+        except Exception as e:  # noqa: BLE001
+            if debug:
+                debug.log(
+                    f"Failed to enable SDPA flash backend: {e}. Falling back to 'sdpa'.",
+                    level="WARNING",
+                    category="setup",
+                    force=True,
+                )
+            return 'sdpa'
+
     return requested_mode
 
 

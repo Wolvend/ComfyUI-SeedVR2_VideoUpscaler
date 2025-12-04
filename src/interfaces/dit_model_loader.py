@@ -100,16 +100,17 @@ class SeedVR2LoadDiTModel(io.ComfyNode):
                     )
                 ),
                 io.Combo.Input("attention_mode",
-                    options=["sdpa", "flash_attn"],
+                    options=["sdpa", "sdpa_flash", "flash_attn"],
                     default="sdpa",
                     optional=True,
                     tooltip=(
                         "Attention computation backend:\n"
                         "• sdpa: PyTorch scaled_dot_product_attention (default, stable, always available)\n"
-                        "• flash_attn: Flash Attention 2 (faster on supported hardware, requires flash-attn package)\n"
+                        "• sdpa_flash: PyTorch SDPA flash backend (no flash-attn dependency, CUDA only)\n"
+                        "• flash_attn: Flash Attention 2 (fastest on supported hardware, requires flash-attn package)\n"
                         "\n"
-                        "SDPA is recommended - stable and works everywhere.\n"
-                        "Flash Attention provides speedup through optimized CUDA kernels on compatible GPUs."
+                        "SDPA is recommended for portability. Use sdpa_flash for a built-in speedup if CUDA supports it,\n"
+                        "or flash_attn if the extension is installed and supported on your GPU."
                     )
                 ),
                 io.Custom("TORCH_COMPILE_ARGS").Input("torch_compile_args",
@@ -142,7 +143,7 @@ class SeedVR2LoadDiTModel(io.ComfyNode):
             cache_model: Whether to keep model loaded between runs
             blocks_to_swap: Number of transformer blocks to swap (requires offload_device != device)
             swap_io_components: Whether to offload I/O components (requires offload_device != device)
-            attention_mode: Attention computation backend ('sdpa' or 'flash_attn')
+            attention_mode: Attention computation backend ('sdpa', 'sdpa_flash', or 'flash_attn')
             torch_compile_args: Optional torch.compile configuration from settings node
             
         Returns:

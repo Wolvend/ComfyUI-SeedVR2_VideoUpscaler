@@ -746,6 +746,7 @@ def configure_runner(
     decode_tile_overlap: Optional[Tuple[int, int]] = None,
     tile_debug: str = "false",
     attention_mode: str = 'sdpa',
+    backend: str = 'torch',
     torch_compile_args_dit: Optional[Dict[str, Any]] = None,
     torch_compile_args_vae: Optional[Dict[str, Any]] = None
 ) -> Tuple[VideoDiffusionInfer, Dict[str, Any]]:
@@ -773,6 +774,7 @@ def configure_runner(
         decode_tile_overlap: Tile overlap for decoding (height, width)
         tile_debug: Tile visualization mode (false/encode/decode)
         attention_mode: Attention computation backend ('sdpa', 'sdpa_flash', or 'flash_attn')
+        backend: Inference backend ('torch' or 'trt'; 'trt' will fall back to torch if unsupported)
         torch_compile_args_dit: Optional torch.compile configuration for DiT model
         torch_compile_args_vae: Optional torch.compile configuration for VAE model
         
@@ -810,7 +812,7 @@ def configure_runner(
         runner, ctx,
         encode_tiled, encode_tile_size, encode_tile_overlap,
         decode_tiled, decode_tile_size, decode_tile_overlap,
-        tile_debug, attention_mode,
+        tile_debug, attention_mode, backend,
         torch_compile_args_dit, torch_compile_args_vae,
         block_swap_config, debug
     )
@@ -835,6 +837,7 @@ def _configure_runner_settings(
     decode_tile_overlap: Optional[Tuple[int, int]],
     tile_debug: str,
     attention_mode: str,
+    backend: str,
     torch_compile_args_dit: Optional[Dict[str, Any]],
     torch_compile_args_vae: Optional[Dict[str, Any]],
     block_swap_config: Optional[Dict[str, Any]],
@@ -859,6 +862,7 @@ def _configure_runner_settings(
         decode_tile_overlap: Overlap dimensions (height, width) between decoding tiles
         tile_debug: Tile visualization mode (false/encode/decode)
         attention_mode: Attention computation backend ('sdpa', 'sdpa_flash', or 'flash_attn')
+        backend: Inference backend ('torch' or 'trt')
         torch_compile_args_dit: torch.compile configuration for DiT model or None
         torch_compile_args_vae: torch.compile configuration for VAE model or None
         block_swap_config: BlockSwap configuration for DiT model or None
@@ -879,6 +883,17 @@ def _configure_runner_settings(
     runner._new_vae_compile_args = torch_compile_args_vae
     runner._new_dit_block_swap_config = block_swap_config
     runner._new_dit_attention_mode = attention_mode
+    runner._new_backend = backend
+
+    # Backend is currently torch-only; TensorRT path will fall back to torch unless implemented.
+    if backend == 'trt' and debug:
+        debug.log(
+            "TensorRT backend requested. TRT engines are not yet wired; falling back to torch path. "
+            "Add prebuilt TRT engines and runtime integration to enable.",
+            category="setup",
+            level="WARNING",
+            force=True,
+        )
     runner._new_vae_tiling_config = {
         'encode_tiled': encode_tiled,
         'encode_tile_size': encode_tile_size,
@@ -969,8 +984,11 @@ def _setup_models(
             runner.vae._config_compile = runner._new_vae_compile_args
             runner.vae._config_tiling = runner._new_vae_tiling_config
     
+    # Persist backend selection (used for future extensions/fallback logging)
+    runner._backend = getattr(runner, '_new_backend', 'torch')
+    
     # Clean up temporary attributes
-    for attr in ['_new_dit_compile_args', '_new_vae_compile_args', '_new_dit_block_swap_config', '_new_dit_attention_mode', '_new_vae_tiling_config']:
+    for attr in ['_new_dit_compile_args', '_new_vae_compile_args', '_new_dit_block_swap_config', '_new_dit_attention_mode', '_new_vae_tiling_config', '_new_backend']:
         if hasattr(runner, attr):
             delattr(runner, attr)
     

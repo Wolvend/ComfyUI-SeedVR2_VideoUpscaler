@@ -846,6 +846,7 @@ python inference_cli.py media_folder/ \
 - `--tile_debug`: Visualize tiles: 'false' (default), 'encode', or 'decode'
 
 **Performance Optimization:**
+- `--backend`: Inference backend: `torch` (default) or `trt` (TensorRT engines; falls back to torch if unavailable/mismatched)
 - `--attention_mode`: Attention backend: 'sdpa' (default, stable), 'sdpa_flash' (PyTorch flash SDPA, CUDA only), or 'flash_attn' (fastest, requires package)
 - `--compile_dit`: Enable torch.compile for DiT model (20-40% speedup, requires PyTorch 2.0+ and Triton)
 - `--compile_vae`: Enable torch.compile for VAE model (15-25% speedup, requires PyTorch 2.0+ and Triton)

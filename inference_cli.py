@@ -745,6 +745,7 @@ def _process_frames_core(
         decode_tile_overlap=(args.vae_decode_tile_overlap, args.vae_decode_tile_overlap),
         tile_debug=args.tile_debug.lower() if args.tile_debug else "false",
         attention_mode=args.attention_mode,
+        backend=args.backend,
         torch_compile_args_dit=torch_compile_args_dit,
         torch_compile_args_vae=torch_compile_args_vae
     )
@@ -1158,9 +1159,11 @@ Examples:
     
     # Performance
     perf_group = parser.add_argument_group('Performance optimization')
+    perf_group.add_argument("--backend", type=str, default="torch", choices=["torch", "trt"],
+                        help="Inference backend: 'torch' (default, supports flash/SDPA/torch.compile) or 'trt' (TensorRT engines; falls back to torch if unavailable/shape mismatch)")
     perf_group.add_argument("--attention_mode", type=str, default="sdpa",
                         choices=["sdpa", "sdpa_flash", "flash_attn"],
-                        help=\"Attention backend: 'sdpa' (default, always available), 'sdpa_flash' (PyTorch flash SDPA, CUDA only), or 'flash_attn' (fastest, requires package)\")
+                        help="Attention backend for torch path: 'sdpa' (default, always available), 'sdpa_flash' (PyTorch flash SDPA, CUDA only), or 'flash_attn' (fastest, requires package)")
     perf_group.add_argument("--compile_dit", action="store_true", 
                         help="Enable torch.compile for DiT model (20-40%% speedup, requires PyTorch 2.0+ and Triton)")
     perf_group.add_argument("--compile_vae", action="store_true",

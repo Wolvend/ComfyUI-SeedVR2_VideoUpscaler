@@ -848,6 +848,9 @@ python inference_cli.py media_folder/ \
 **Performance Optimization:**
 - `--backend`: Inference backend: `torch` (default) or `trt` (TensorRT engines; falls back to torch if unavailable/mismatched)
 - `--attention_mode`: Attention backend: 'sdpa' (default, stable), 'sdpa_flash' (PyTorch flash SDPA, CUDA only), or 'flash_attn' (fastest, requires package)
+
+Experimental TensorRT scaffold:
+- `scripts/build_trt.py` can export stub ONNX and build FP16 TRT engines for fixed profiles (720p/1080p landscape/portrait). Engines live under `models/SEEDVR2/trt/`. At runtime, `--backend trt` is opt-in and will fall back to torch if no matching engine is found. Shapes outside the fixed profiles will use the existing torch path.
 - `--compile_dit`: Enable torch.compile for DiT model (20-40% speedup, requires PyTorch 2.0+ and Triton)
 - `--compile_vae`: Enable torch.compile for VAE model (15-25% speedup, requires PyTorch 2.0+ and Triton)
 - `--compile_backend`: Compilation backend: 'inductor' (full optimization) or 'cudagraphs' (lightweight) (default: inductor)
